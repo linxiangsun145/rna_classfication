@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>RNA Family Classification Demo</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  </head>
+  <body>
+    <main class="page">
+      <section class="card hero">
+        <p class="eyebrow">Local Demo</p>
+        <h1>RNA Family Classification Demo</h1>
+        <p class="lead">
+          Upload RNA sequences in FASTA or CSV format and classify them into Rfam families using trained sequence models.
+        </p>
+        <p class="muted">
+          Predictions are for educational demonstration only and should not be used as definitive biological annotations.
+        </p>
+      </section>
+
+      <section class="card intro-card">
+        <h2>Model Options</h2>
+        <p class="lead">
+          Choose between a stable demonstration model and a higher-coverage experimental model.
+        </p>
+        <div class="model-summary-grid">
+          <article class="model-summary-card">
+            <div class="model-summary-head">
+              <h3>Stable model</h3>
+              <span class="badge badge-ok">Recommended</span>
+            </div>
+            <p>A reliable model trained on 1,669 Rfam families, recommended for standard demonstration and stable predictions.</p>
+            <p><code>max_len = 512</code></p>
+          </article>
+          <article class="model-summary-card">
+            <div class="model-summary-head">
+              <h3>High-coverage model</h3>
+              <span class="badge badge-experimental">Experimental</span>
+            </div>
+            <p>An experimental model trained on 2,238 Rfam families, designed to cover more families but may produce lower-confidence predictions for difficult or low-support classes.</p>
+            <p><code>max_len = 1024</code></p>
+          </article>
+        </div>
+      </section>
+
+      <section class="card upload-card">
+        <h2>Choose Input File</h2>
+        <div class="example-actions">
+          <a class="button-link secondary" href="{{ url_for('download_example', filename='test_sequences.fasta') }}">Download example FASTA</a>
+          <a class="button-link secondary" href="{{ url_for('download_example', filename='test_sequences.csv') }}">Download example CSV</a>
+        </div>
+        <div class="note-box">
+          <p><strong>FASTA format</strong></p>
+          <pre>&gt;seq_id
+AUGCUAGCUAGC</pre>
+          <p><strong>CSV format</strong></p>
+          <p>Must contain a <code>sequence</code> column. <code>sequence_id</code> is optional.</p>
+          <p>If <code>sequence_id</code> is present, it is preserved. Otherwise an ID is generated automatically.</p>
+        </div>
+
+        {% if error_message %}
+        <div class="alert error">
+          <strong>Prediction Error</strong>
+          <pre>{{ error_message }}</pre>
+        </div>
+        {% endif %}
+
+        <form action="{{ url_for('predict') }}" method="post" enctype="multipart/form-data" class="upload-form">
+          <fieldset class="model-selector">
+            <legend>Select model</legend>
+            <div class="model-options">
+              {% for model in model_options %}
+              <label class="model-option">
+                <input
+                  type="radio"
+                  name="model_key"
+                  value="{{ model.key }}"
+                  {% if model.key == selected_model_key %}checked{% endif %}
+                >
+                <div class="model-option-body">
+                  <div class="model-option-title-row">
+                    <span class="model-option-title">{{ model.display_name }}</span>
+                    {% if model.key == "high_coverage_2238" %}
+                    <span class="badge badge-experimental">Experimental</span>
+                    {% endif %}
+                  </div>
+                  <p class="model-option-desc">{{ model.description }}</p>
+                </div>
+              </label>
+              {% endfor %}
+            </div>
+          </fieldset>
+
+          <label for="file" class="file-label">Choose input file</label>
+          <input id="file" name="file" type="file" accept=".fasta,.fa,.csv" required>
+          <button type="submit">Run prediction</button>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>

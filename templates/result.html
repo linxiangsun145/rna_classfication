@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Prediction Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  </head>
+  <body>
+    <main class="page">
+      <section class="card hero">
+        <p class="eyebrow">Prediction Complete</p>
+        <h1>RNA Family Classification Results</h1>
+        <p class="lead">Uploaded file: <code>{{ original_name }}</code></p>
+        <p class="muted">Rows predicted: {{ row_count }}</p>
+        <div class="actions">
+          <a class="button-link" href="{{ url_for('download', filename=output_name) }}">Download CSV</a>
+          <a class="button-link secondary" href="{{ url_for('index') }}">Run Another Prediction</a>
+        </div>
+        {% if message %}
+        <pre class="log-box">{{ message }}</pre>
+        {% endif %}
+      </section>
+
+      <section class="card model-used-card">
+        <p class="eyebrow">Model Used</p>
+        <div class="model-used-grid">
+          <div>
+            <p class="model-used-label">Model name</p>
+            <p class="model-used-value">{{ selected_model_name }}</p>
+          </div>
+          <div>
+            <p class="model-used-label">Family coverage</p>
+            <p class="model-used-value">{{ selected_model_family_count }} families</p>
+          </div>
+          <div>
+            <p class="model-used-label">Max sequence length</p>
+            <p class="model-used-value">{{ selected_model_max_len }}</p>
+          </div>
+          <div>
+            <p class="model-used-label">Mode description</p>
+            <p class="model-used-value model-used-desc">{{ selected_model_description }}</p>
+          </div>
+        </div>
+      </section>
+
+      {% if selected_model_is_experimental %}
+      <section class="warning-box">
+        This model covers more families, but predictions for low-support or long-sequence families may be less stable.
+      </section>
+      {% endif %}
+
+      <section class="card interpretation-card">
+        <p class="eyebrow">Result Interpretation</p>
+        <p class="interpretation-text">
+          Predictions with high confidence are more reliable. Medium or low confidence results should be interpreted cautiously, especially for short sequences, long sequences, or families known to be difficult to distinguish.
+        </p>
+      </section>
+
+      <section class="summary-grid">
+        <article class="card summary-card">
+          <p class="summary-label">Total Sequences</p>
+          <p class="summary-value">{{ summary.total }}</p>
+        </article>
+        <article class="card summary-card">
+          <p class="summary-label">High Confidence</p>
+          <p class="summary-value">{{ summary.high_confidence }}</p>
+        </article>
+        <article class="card summary-card">
+          <p class="summary-label">Medium Confidence</p>
+          <p class="summary-value">{{ summary.medium_confidence }}</p>
+        </article>
+        <article class="card summary-card">
+          <p class="summary-label">Low Confidence</p>
+          <p class="summary-value">{{ summary.low_confidence }}</p>
+        </article>
+        <article class="card summary-card">
+          <p class="summary-label">Truncated</p>
+          <p class="summary-value">{{ summary.truncated }}</p>
+        </article>
+        <article class="card summary-card">
+          <p class="summary-label">Most Frequent Family</p>
+          <p class="summary-value summary-family">{{ summary.most_frequent_family }}</p>
+        </article>
+      </section>
+
+      <section class="card table-card">
+        <h2>Prediction Table</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                {% for column in columns %}
+                <th>{{ column }}</th>
+                {% endfor %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in rows %}
+              <tr>
+                {% for column in columns %}
+                <td>
+                  {% if column == "predicted_family_annotation" %}
+                  <div class="family-cell">
+                    <span class="family-main">{{ row["predicted_family"] }}</span>
+                    <span class="family-desc">{{ row[column] }}</span>
+                  </div>
+                  {% elif column == "confidence" %}
+                  <div class="badge-cell">
+                    <span>{{ row[column] }}</span>
+                    <span class="badge {{ row.confidence_badge_class }}">{{ row.confidence_level }}</span>
+                  </div>
+                  {% elif column == "risk_flag" %}
+                  <span class="badge {{ row.risk_badge_class }}">{{ row[column] }}</span>
+                  {% else %}
+                  {{ row[column] }}
+                  {% endif %}
+                </td>
+                {% endfor %}
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

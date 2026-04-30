@@ -1,0 +1,63 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+.env
+.venv/
+venv/
+.wsl_mamba_env/
+.ipynb_checkpoints/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Runtime uploads and predictions
+uploads/*
+!uploads/.gitkeep
+predictions/*
+!predictions/.gitkeep
+predictions/web/*
+!predictions/web/.gitkeep
+
+# Raw Rfam data
+data/rfam_fasta/
+data/Rfam.fa/
+*.fa.gz
+*.fasta.gz
+
+# Processed datasets
+processed*/
+processed_rfam*/
+processed_rfam_*/
+processed_rfam_large*/
+processed_rfam_near_full*/
+
+# Training runs and checkpoints
+runs*/
+runs_rfam*/
+*.pt
+*.pth
+*.ckpt
+*.bin
+
+# Reports / logs
+reports/
+*.log
+
+# Large data files
+*.parquet
+*.h5
+*.hdf5
+
+# Local verification artifacts
+.stable_*.html
+.stable_*.txt
+.high_*.html
+.high_*.txt
+.home_*.html
+.flask_*.log
