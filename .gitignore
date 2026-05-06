@@ -61,3 +61,11 @@ reports/
 .high_*.txt
 .home_*.html
 .flask_*.log
+
+# Allow final deployment model files
+!runs_rfam_2238_bigru/
+!runs_rfam_2238_bigru/bigru_run/
+!runs_rfam_2238_bigru/bigru_run/best_model.pt
+
+!processed_rfam_near_full_v2_1_min20_1024/
+!processed_rfam_near_full_v2_1_min20_1024/label_mapping.json

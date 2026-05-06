@@ -14,6 +14,13 @@ The deployed demo uses a BiGRU classifier trained on 2,238 Rfam families.
 
 This model was selected because it provides the best balance between family coverage, prediction quality, and deployment simplicity. It uses only standard PyTorch modules and does not require `mamba-ssm` or CUDA-specific dependencies.
 
+The final deployment model is tracked with Git LFS. After cloning the repository, make sure Git LFS files are pulled:
+
+```bash
+git lfs install
+git lfs pull
+```
+
 ## Docker quick start
 
 ```bash
@@ -64,6 +71,12 @@ If the model checkpoint or label mapping is not present locally, the app will re
 Docker deployment also requires these files to exist at the same paths before `docker build` and `docker run`.
 
 If the checkpoint is too large for normal GitHub tracking, keep it outside normal source control and provide it through a release asset, local placement, or another artifact distribution path.
+
+If the model file is missing after clone, run:
+
+```bash
+git lfs pull
+```
 
 ## Input formats
 
