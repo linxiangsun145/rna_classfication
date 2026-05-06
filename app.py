@@ -1,15 +1,11 @@
 from __future__ import annotations
 
 import csv
-import os
-import shlex
-import shutil
 import subprocess
 import sys
 from collections import Counter
 from datetime import datetime
 from pathlib import Path
-from typing import Any
 from uuid import uuid4
 
 try:
@@ -27,8 +23,6 @@ PREDICTION_DIR = BASE_DIR / "predictions" / "web"
 EXAMPLES_DIR = BASE_DIR / "examples"
 RFAM_METADATA_PATH = BASE_DIR / "data" / "rfam_family_metadata.csv"
 PREDICT_SCRIPT = BASE_DIR / "scripts" / "predict_rna_family.py"
-WSL_PROJECT_DIR = "/mnt/d/vibe_coding/rna_classfication"
-WSL_VENV_PYTHON = f"{WSL_PROJECT_DIR}/.wsl_mamba_env/bin/python"
 ALLOWED_EXTENSIONS = {".fasta", ".fa", ".csv"}
 ALLOWED_EXAMPLE_FILES = {"test_sequences.fasta", "test_sequences.csv"}
 DISPLAY_COLUMNS = [
@@ -45,34 +39,21 @@ DISPLAY_COLUMNS = [
     "top3_family",
     "top3_prob",
 ]
-MODEL_CONFIGS = {
-    "stable_1669": {
-        "key": "stable_1669",
-        "display_name": "Stable model (1669 families)",
-        "model_path": BASE_DIR / "runs_rfam_1669" / "mamba_run" / "best_model.pt",
-        "label_mapping": BASE_DIR / "processed_rfam_1669" / "label_mapping.json",
-        "max_len": 512,
-        "description": "Recommended for demonstration. Higher reliability.",
-        "family_count": 1669,
-        "is_default": True,
-    },
-    "high_coverage_2238": {
-        "key": "high_coverage_2238",
-        "display_name": "High-coverage model (2238 families, experimental)",
-        "model_path": BASE_DIR
-        / "runs_rfam_v2_1_baseline_ce"
-        / "mamba_run"
-        / "best_model.pt",
-        "label_mapping": BASE_DIR
-        / "processed_rfam_near_full_v2_1_min20_1024"
-        / "label_mapping.json",
-        "max_len": 1024,
-        "description": (
-            "Covers more Rfam families but may be less stable for low-support families."
-        ),
-        "family_count": 2238,
-        "is_default": False,
-    },
+FINAL_MODEL = {
+    "name": "BiGRU RNA Family Classifier",
+    "model_type": "bigru",
+    "model_path": BASE_DIR / "runs_rfam_2238_bigru" / "bigru_run" / "best_model.pt",
+    "label_mapping": BASE_DIR
+    / "processed_rfam_near_full_v2_1_min20_1024"
+    / "label_mapping.json",
+    "max_len": 1024,
+    "family_count": 2238,
+    "description": (
+        "This demo uses a BiGRU classifier trained on 2,238 Rfam families. "
+        "It was selected as the final deployment model because it provides strong "
+        "high-coverage performance while remaining lightweight and easy to deploy "
+        "with standard PyTorch."
+    ),
 }
 
 app = Flask(__name__)
@@ -85,23 +66,6 @@ def ensure_directories() -> None:
 
 def allowed_file(filename: str) -> bool:
     return Path(filename).suffix.lower() in ALLOWED_EXTENSIONS
-
-
-def get_default_model_key() -> str:
-    for key, config in MODEL_CONFIGS.items():
-        if config.get("is_default"):
-            return key
-    return "stable_1669"
-
-
-def get_model_config(model_key: str | None) -> dict[str, Any]:
-    if model_key in MODEL_CONFIGS:
-        return MODEL_CONFIGS[str(model_key)]
-    return MODEL_CONFIGS[get_default_model_key()]
-
-
-def get_model_options() -> list[dict[str, Any]]:
-    return list(MODEL_CONFIGS.values())
 
 
 def build_job_id() -> str:
@@ -245,7 +209,7 @@ def read_prediction_rows(csv_path: Path) -> list[dict[str, str]]:
 def run_prediction(
     input_path: Path,
     output_path: Path,
-    model_config: dict[str, Any],
+    model_config: dict[str, object],
 ) -> tuple[bool, str]:
     command = build_prediction_command(input_path, output_path, model_config)
 
@@ -261,61 +225,10 @@ def run_prediction(
     return True, completed.stdout.strip()
 
 
-def windows_path_to_wsl(path: Path) -> str:
-    resolved = path.resolve()
-    drive = resolved.drive.rstrip(":").lower()
-    tail = resolved.as_posix().split(":", 1)[-1]
-    return f"/mnt/{drive}{tail}"
-
-
-def should_use_wsl_runtime() -> bool:
-    return os.name == "nt" and shutil.which("wsl") is not None and (BASE_DIR / ".wsl_mamba_env").exists()
-
-
-def build_wsl_prediction_command(
-    input_path: Path,
-    output_path: Path,
-    model_config: dict[str, Any],
-) -> list[str]:
-    predict_args = [
-        WSL_VENV_PYTHON,
-        f"{WSL_PROJECT_DIR}/scripts/predict_rna_family.py",
-        "--input",
-        windows_path_to_wsl(input_path),
-        "--output",
-        windows_path_to_wsl(output_path),
-        "--model_path",
-        windows_path_to_wsl(Path(model_config["model_path"])),
-        "--label_mapping",
-        windows_path_to_wsl(Path(model_config["label_mapping"])),
-        "--model_type",
-        "mamba",
-        "--max_len",
-        str(model_config["max_len"]),
-        "--batch_size",
-        "64",
-        "--top_k",
-        "3",
-        "--device",
-        "cuda",
-    ]
-    quoted_args = " ".join(shlex.quote(arg) for arg in predict_args)
-    shell_command = " && ".join(
-        [
-            f"cd {shlex.quote(WSL_PROJECT_DIR)}",
-            "export CUDA_HOME=/usr/local/cuda-12.8",
-            "export PATH=/usr/local/cuda-12.8/bin:/usr/bin:/bin:$PATH",
-            "export LD_LIBRARY_PATH=/usr/local/cuda-12.8/lib64:$LD_LIBRARY_PATH",
-            quoted_args,
-        ]
-    )
-    return ["wsl", "-d", "Ubuntu", "bash", "-lc", shell_command]
-
-
 def build_local_prediction_command(
     input_path: Path,
     output_path: Path,
-    model_config: dict[str, Any],
+    model_config: dict[str, object],
 ) -> list[str]:
     return [
         sys.executable,
@@ -329,29 +242,27 @@ def build_local_prediction_command(
         "--label_mapping",
         str(model_config["label_mapping"]),
         "--model_type",
-        "mamba",
+        str(model_config["model_type"]),
         "--max_len",
         str(model_config["max_len"]),
         "--batch_size",
         "64",
         "--top_k",
-        "3",
+        "5",
         "--device",
-        "cuda",
+        "cpu",
     ]
 
 
 def build_prediction_command(
     input_path: Path,
     output_path: Path,
-    model_config: dict[str, Any],
+    model_config: dict[str, object],
 ) -> list[str]:
-    if should_use_wsl_runtime():
-        return build_wsl_prediction_command(input_path, output_path, model_config)
     return build_local_prediction_command(input_path, output_path, model_config)
 
 
-def validate_runtime_paths(model_config: dict[str, Any]) -> str | None:
+def validate_runtime_paths(model_config: dict[str, object]) -> str | None:
     missing = []
     if not PREDICT_SCRIPT.exists():
         missing.append(str(PREDICT_SCRIPT))
@@ -364,24 +275,21 @@ def validate_runtime_paths(model_config: dict[str, Any]) -> str | None:
     return None
 
 
-def build_selected_model_context(model_config: dict[str, Any]) -> dict[str, Any]:
+def build_selected_model_context(model_config: dict[str, object]) -> dict[str, object]:
     return {
-        "selected_model_name": model_config["display_name"],
-        "selected_model_key": model_config["key"],
+        "selected_model_name": model_config["name"],
         "selected_model_description": model_config["description"],
         "selected_model_max_len": model_config["max_len"],
         "selected_model_family_count": model_config["family_count"],
-        "selected_model_is_experimental": model_config["key"] == "high_coverage_2238",
     }
 
 
-def render_index(error_message: str | None, selected_model_key: str, status_code: int = 200):
+def render_index(error_message: str | None, status_code: int = 200):
     return (
         render_template(
             "index.html",
             error_message=error_message,
-            model_options=get_model_options(),
-            selected_model_key=selected_model_key,
+            final_model=FINAL_MODEL,
         ),
         status_code,
     )
@@ -392,8 +300,7 @@ def index():
     return render_template(
         "index.html",
         error_message=None,
-        model_options=get_model_options(),
-        selected_model_key=get_default_model_key(),
+        final_model=FINAL_MODEL,
     )
 
 
@@ -401,37 +308,24 @@ def index():
 def predict():
     ensure_directories()
 
-    selected_model = get_model_config(request.form.get("model_key"))
-    runtime_error = validate_runtime_paths(selected_model)
+    runtime_error = validate_runtime_paths(FINAL_MODEL)
     if runtime_error is not None:
-        return render_index(runtime_error, selected_model["key"], status_code=500)
+        return render_index(runtime_error, status_code=500)
 
     if "file" not in request.files:
-        return render_index("No file was uploaded.", selected_model["key"], status_code=400)
+        return render_index("No file was uploaded.", status_code=400)
 
     uploaded_file = request.files["file"]
     if uploaded_file.filename is None or uploaded_file.filename.strip() == "":
-        return render_index(
-            "Please choose a FASTA or CSV file.",
-            selected_model["key"],
-            status_code=400,
-        )
+        return render_index("Please choose a FASTA or CSV file.", status_code=400)
 
     original_name = uploaded_file.filename
     if not allowed_file(original_name):
-        return render_index(
-            "Unsupported file type. Please upload .fasta, .fa, or .csv.",
-            selected_model["key"],
-            status_code=400,
-        )
+        return render_index("Unsupported file type. Please upload .fasta, .fa, or .csv.", status_code=400)
 
     file_bytes = uploaded_file.read()
     if not file_bytes:
-        return render_index(
-            "The uploaded file is empty.",
-            selected_model["key"],
-            status_code=400,
-        )
+        return render_index("The uploaded file is empty.", status_code=400)
 
     job_id = build_job_id()
     safe_name = secure_filename(original_name)
@@ -439,35 +333,19 @@ def predict():
     upload_path = UPLOAD_DIR / upload_name
     upload_path.write_bytes(file_bytes)
 
-    output_name = f"prediction_{job_id}_{selected_model['key']}.csv"
+    output_name = f"prediction_{job_id}_bigru_2238.csv"
     output_path = PREDICTION_DIR / output_name
 
-    ok, message = run_prediction(upload_path, output_path, selected_model)
+    ok, message = run_prediction(upload_path, output_path, FINAL_MODEL)
     if not ok:
-        return render_index(
-            (
-                "Prediction failed. If you are not running inside the WSL Mamba environment, "
-                "mamba-ssm may be unavailable.\n\n"
-                f"{message}"
-            ),
-            selected_model["key"],
-            status_code=500,
-        )
+        return render_index(f"Prediction failed.\n\n{message}", status_code=500)
 
     if not output_path.exists():
-        return render_index(
-            "Prediction finished but no output CSV was created.",
-            selected_model["key"],
-            status_code=500,
-        )
+        return render_index("Prediction finished but no output CSV was created.", status_code=500)
 
     rows = read_prediction_rows(output_path)
     if not rows:
-        return render_index(
-            "Prediction output is empty.",
-            selected_model["key"],
-            status_code=500,
-        )
+        return render_index("Prediction output is empty.", status_code=500)
 
     metadata_map = load_rfam_metadata(RFAM_METADATA_PATH)
     summary = build_prediction_summary(rows)
@@ -482,7 +360,7 @@ def predict():
         rows=display_rows,
         columns=DISPLAY_COLUMNS,
         message=message,
-        **build_selected_model_context(selected_model),
+        **build_selected_model_context(FINAL_MODEL),
     )
 
 

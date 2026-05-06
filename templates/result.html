@@ -10,7 +10,7 @@
     <main class="page">
       <section class="card hero">
         <p class="eyebrow">Prediction Complete</p>
-        <h1>RNA Family Classification Results</h1>
+        <h1>RNA Family Classification Demo Results</h1>
         <p class="lead">Uploaded file: <code>{{ original_name }}</code></p>
         <p class="muted">Rows predicted: {{ row_count }}</p>
         <div class="actions">
@@ -26,34 +26,28 @@
         <p class="eyebrow">Model Used</p>
         <div class="model-used-grid">
           <div>
-            <p class="model-used-label">Model name</p>
+            <p class="model-used-label">Model</p>
             <p class="model-used-value">{{ selected_model_name }}</p>
           </div>
           <div>
-            <p class="model-used-label">Family coverage</p>
-            <p class="model-used-value">{{ selected_model_family_count }} families</p>
+            <p class="model-used-label">Coverage</p>
+            <p class="model-used-value">{{ "{:,}".format(selected_model_family_count) }} Rfam families</p>
           </div>
           <div>
-            <p class="model-used-label">Max sequence length</p>
-            <p class="model-used-value">{{ selected_model_max_len }}</p>
+            <p class="model-used-label">Maximum input length</p>
+            <p class="model-used-value">{{ "{:,}".format(selected_model_max_len) }} nt</p>
           </div>
           <div>
-            <p class="model-used-label">Mode description</p>
+            <p class="model-used-label">Description</p>
             <p class="model-used-value model-used-desc">{{ selected_model_description }}</p>
           </div>
         </div>
       </section>
 
-      {% if selected_model_is_experimental %}
-      <section class="warning-box">
-        This model covers more families, but predictions for low-support or long-sequence families may be less stable.
-      </section>
-      {% endif %}
-
       <section class="card interpretation-card">
         <p class="eyebrow">Result Interpretation</p>
         <p class="interpretation-text">
-          Predictions with high confidence are more reliable. Medium or low confidence results should be interpreted cautiously, especially for short sequences, long sequences, or families known to be difficult to distinguish.
+          Predictions with high confidence are more reliable. Medium or low confidence results should be interpreted cautiously, especially for very short sequences, very long sequences, or families known to be difficult to distinguish.
         </p>
       </section>
 

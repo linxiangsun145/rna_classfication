@@ -1,0 +1,10 @@
+services:
+  rna-classifier:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./uploads:/app/uploads
+      - ./predictions:/app/predictions
+    environment:
+      - FLASK_ENV=production

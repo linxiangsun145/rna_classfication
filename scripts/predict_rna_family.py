@@ -41,8 +41,8 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--model_type",
-        choices=["mamba", "cnn"],
-        default="mamba",
+        choices=["mamba", "cnn", "gru", "bigru"],
+        default="bigru",
         help="Model type to load if checkpoint config does not specify one.",
     )
     parser.add_argument("--max_len", type=int, default=DEFAULT_MAX_LEN, help="Maximum sequence length.")
@@ -228,6 +228,18 @@ def build_model(
     num_classes: int,
     config: dict[str, Any],
 ) -> Any:
+    if model_type in {"gru", "bigru"}:
+        from models.gru_classifier import GRUClassifier
+
+        return GRUClassifier(
+            num_classes=num_classes,
+            embed_dim=int(config.get("gru_embed_dim", config.get("embed_dim", 128))),
+            hidden_dim=int(config.get("gru_hidden_dim", config.get("hidden_dim", 128))),
+            num_layers=int(config.get("gru_num_layers", config.get("num_layers", 1))),
+            dropout=float(config.get("gru_dropout", config.get("dropout", 0.2))),
+            bidirectional=bool(config.get("bidirectional", model_type == "bigru")),
+        )
+
     if model_type == "cnn":
         from models.cnn_classifier import CNNClassifier
 

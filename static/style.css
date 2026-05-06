@@ -75,17 +75,12 @@ body {
   gap: 1rem;
 }
 
-.model-summary-grid {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-}
-
 .model-summary-card {
   padding: 1rem 1.1rem;
   border: 1px solid var(--line);
   border-radius: 14px;
   background: #fff;
+  max-width: 52rem;
 }
 
 .model-summary-card h3,
@@ -101,66 +96,16 @@ body {
   line-height: 1.55;
 }
 
+.deployment-card code {
+  font-size: 0.95rem;
+}
+
 .model-summary-head {
   display: flex;
   flex-wrap: wrap;
   gap: 0.6rem;
   align-items: center;
   margin-bottom: 0.65rem;
-}
-
-.model-selector {
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-
-.model-selector legend {
-  font-weight: 700;
-  margin-bottom: 0.7rem;
-}
-
-.model-options {
-  display: grid;
-  gap: 0.75rem;
-}
-
-.model-option {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0.75rem;
-  align-items: start;
-  padding: 0.9rem 1rem;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: #fff;
-  cursor: pointer;
-}
-
-.model-option input[type="radio"] {
-  margin-top: 0.2rem;
-}
-
-.model-option-body {
-  display: grid;
-  gap: 0.35rem;
-}
-
-.model-option-title-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.model-option-title {
-  font-weight: 700;
-}
-
-.model-option-desc {
-  margin: 0;
-  color: var(--muted);
-  line-height: 1.45;
 }
 
 .example-actions {
@@ -299,25 +244,6 @@ button,
 
 .model-used-desc {
   font-weight: 400;
-}
-
-.warning-box {
-  padding: 1rem 1.1rem;
-  border-radius: 14px;
-  border: 1px solid #d8c98b;
-  background: #fbf4d9;
-  color: #6e5600;
-  line-height: 1.55;
-}
-
-.interpretation-list {
-  margin: 0;
-  padding-left: 1.2rem;
-  line-height: 1.65;
-}
-
-.interpretation-list li + li {
-  margin-top: 0.45rem;
 }
 
 .interpretation-text {
