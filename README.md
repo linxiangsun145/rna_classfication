@@ -112,12 +112,6 @@ In practical terms, it offers:
 
 The final `2238-family` BiGRU model remains stable across short, medium, and long RNA sequences. Long sequences are still more difficult, but the model maintains usable performance across all length buckets.
 
-### Why 3818-family was not selected
-
-The `3818-family` dataset was not selected as the main deployment setting because `min_samples_per_family=1` introduced many singleton and ultra-low-support families. This caused many classes to have `F1=0` and reduced macro-F1, even though overall accuracy remained high.
-
-Therefore, the `3818-family` setting is kept as an extreme-coverage stress test rather than a production/demo model.
-
 ## Docker quick start
 
 ```bash
