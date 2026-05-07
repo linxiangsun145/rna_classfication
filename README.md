@@ -136,22 +136,6 @@ Open the demo at:
 ```text
 http://127.0.0.1:5000
 ```
-
-## Docker deployment status
-
-Docker CPU-only deployment has been tested successfully.
-
-- `docker build`: PASS
-- `docker run`: PASS
-- container CPU inference: PASS
-- Flask upload prediction: PASS
-
-The deployed container runs on CPU by default:
-
-- No CUDA required
-- No `mamba-ssm` required
-- Only one model is deployed: `2238-family BiGRU`
-
 ## Required model files
 
 The final deployment model is tracked with Git LFS. After cloning the repository, run:
