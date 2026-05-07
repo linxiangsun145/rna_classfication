@@ -87,7 +87,7 @@ The main model directions in this project were:
 
 ### Model comparison and final selection
 
-![Macro-F1 Comparison Across Dataset Scales](docs/figures/model_macro_f1_comparison.png)
+![Macro-F1 Comparison Across Dataset Scales](docs/model_macro_f1_comparison.png)
 
 This comparison summarizes how CNN, Mamba, BiGRU, and ensemble models behaved across different Rfam family scales. The `2238-family` BiGRU model was selected as the final deployed model because it provides a strong balance between family coverage, macro-F1 performance, and deployment simplicity. The `3818-family` setting covers more families, but many ultra-low-support classes cause a clear macro-F1 drop, making it less suitable as the default demo model.
 
@@ -108,7 +108,7 @@ In practical terms, it offers:
 - no CUDA requirement
 - suitability for CPU-only Docker deployment
 
-![Length-Bucket Performance of the Final 2238-Family BiGRU Model](docs/figures/final_bigru_length_bucket.png)
+![Length-Bucket Performance of the Final 2238-Family BiGRU Model](docs/final_bigru_length_bucket.png)
 
 The final `2238-family` BiGRU model remains stable across short, medium, and long RNA sequences. Long sequences are still more difficult, but the model maintains usable performance across all length buckets.
 
